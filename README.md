@@ -1,7 +1,8 @@
 # yamaform
 Form generator
 
-Para gerar tables e form <br>
+Para gerar tables e form
+
 `{
   'pessoa':{
     'nome':varchar,
@@ -20,7 +21,9 @@ Para gerar tables e form <br>
   }
 }
 `
+
 Propriedades do form
+
 `{
   'method':post,
   'url':'/pessoa',
