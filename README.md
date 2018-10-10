@@ -1,7 +1,7 @@
 # yamaform
 Form generator
 
-Para gerar tables e form \n
+Para gerar tables e form <br>
 `{
   'pessoa':{
     'nome':varchar,
