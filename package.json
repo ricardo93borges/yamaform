@@ -16,7 +16,7 @@
     "url": "https://github.com/ricardo93borges/yamaform/issues"
   },
   "homepage": "https://github.com/ricardo93borges/yamaform#readme",
-  "devDependencies": {
+  "dependencies": {
     "mysql": "^2.16.0"
   }
 }
