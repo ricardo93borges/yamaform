@@ -2,26 +2,27 @@
 
 Usage example:
 
-`var yamaform = require('yamaform')`
+```
+var yamaform = require('yamaform')
+var mysql      = require('mysql')
 
-`var mysql      = require('mysql')`
-
-`var connection = mysql.createConnection({
+var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'username',
   password : 'password',
   database : 'database_name'
-})`
+})
 
-`yamaform.generateTables(connection, 'database.json')`
+yamaform.generateTables(connection, 'database.json')
 
-`connection.end()`
+connection.end()
+```
 
 JSON file example:
-
-`{
+```
+{
   'person':{
-    'name':varchar(45),
+    'name':varchar(45), //column name and data type
     'age':integer,
     'hasMany':'dog',
     'hasOne':'address'
@@ -35,11 +36,12 @@ JSON file example:
     'name':'varchar(45)'
   }
 }
-`
+```
 
 Form properties
 
-`{
+```
+{
   'method':post,
   'url':'/pessoa',
   'fields'{
@@ -47,4 +49,4 @@ Form properties
      'idade':1
   }
 }
-`
+```
