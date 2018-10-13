@@ -24,8 +24,13 @@ const isManyToMany = (json, currentTable, otherTable) => {
     return false
 }
 
-exports.generateTables = (connection) => {
-    let json = readFile('file.json')
+/**
+ * Generate tables from a json file
+ * @param  {object} connection - A mysql connection
+ * @param  {string} file - The file path
+ */
+exports.generateTables = (connection, file) => {
+    let json = readFile(file)
     var query = ''
 
     Object.keys(json).forEach( (tableName, index) => {
