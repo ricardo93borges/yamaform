@@ -1,0 +1,22 @@
+{
+  "name": "yamaform",
+  "version": "1.0.0",
+  "description": "Generate form and database tables from a json file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ricardo93borges/yamaform.git"
+  },
+  "author": "Ricardo Borges",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ricardo93borges/yamaform/issues"
+  },
+  "homepage": "https://github.com/ricardo93borges/yamaform#readme",
+  "devDependencies": {
+    "mysql": "^2.16.0"
+  }
+}
