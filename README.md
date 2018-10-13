@@ -1,28 +1,43 @@
 # yamaform
-Form generator
 
-Para gerar tables e form
+Usage example:
+
+`var yamaform = require('yamaform')`
+
+`var mysql      = require('mysql')`
+
+`var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'username',
+  password : 'password',
+  database : 'database_name'
+})`
+
+`yamaform.generateTables(connection, 'database.json')`
+
+`connection.end()`
+
+JSON file example:
 
 `{
-  'pessoa':{
-    'nome':varchar,
-    'idade':int,
-    'hasMany':'cachorro',
-    'hasOne':'endereco'
+  'person':{
+    'name':varchar(45),
+    'age':integer,
+    'hasMany':'dog',
+    'hasOne':'address'
   },
-  'cachorro':{
-    'nome':varchar,
-    'idade':int,
-    'hasMany':'pessoa'
+  'dog':{
+    'name':varchar(45),
+    'age':integer,
+    'hasMany':'person'
   },
-  'endereco':{
-    'nome':'asdf',
-    'belongsTo':'pessoa'//opcional
+  'address':{
+    'name':'varchar(45)'
   }
 }
 `
 
-Propriedades do form
+Form properties
 
 `{
   'method':post,
