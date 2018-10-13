@@ -1,4 +1,4 @@
-# yamaform
+# Yamaform
 
 Usage example:
 
