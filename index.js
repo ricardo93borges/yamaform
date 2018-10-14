@@ -32,7 +32,6 @@ module.exports = class Yamaform {
 
     /**
      * Generate tables from a json file
-     * @param  {object} connection - A mysql connection
      * @param  {string} file - The file path
      */
     async generateTables(file) {
@@ -92,6 +91,12 @@ module.exports = class Yamaform {
         }
     }
 
+    /**
+     * Generate form from a json file
+     * @param  {string} file - The file path
+     * @param  {string} table - The table to which the form must be generated
+     * @param  {object} props - Form properties, example: {"method":"post", "action":"/my/form/action"}
+     */
     async generateForm(file, table, props) {
         try {
             let json = this.readFile(file)
