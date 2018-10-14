@@ -3,50 +3,64 @@
 Usage example:
 
 ```
-var yamaform = require('yamaform')
-var mysql      = require('mysql')
+var Yamaform = require('yamaform')
 
-var connection = mysql.createConnection({
+let databaseConfig = {
   host     : 'localhost',
   user     : 'username',
   password : 'password',
-  database : 'database_name'
-})
+  database : 'database'
+}
 
-yamaform.generateTables(connection, 'database.json')
+const yamaform = new Yamaform(databaseConfig)
 
-connection.end()
+yamaform.generateTables('database.json')
 ```
 
 JSON file example:
 ```
 {
-  'person':{
-    'name':varchar(45), //column name and data type
-    'age':integer,
-    'hasMany':'dog',
-    'hasOne':'address'
-  },
-  'dog':{
-    'name':varchar(45),
-    'age':integer,
-    'hasMany':'person'
-  },
-  'address':{
-    'name':'varchar(45)'
-  }
+    "person": {
+        "name": "varchar(45)",
+        "age": "integer",
+        "hasMany": "dog"
+    },
+    "dog": {
+        "name": "varchar(45)",
+        "age": "integer",
+        "hasMany": "person"
+    },
+    "address": {
+        "name": "varchar(45)"
+    }
 }
 ```
 
-Form properties
+Form creation
 
+Example:
 ```
-{
-  'method':post,
-  'url':'/pessoa',
-  'fields'{
-    'nome':'asfg',
-     'idade':1
-  }
+var Yamaform = require('yamaform')
+
+let databaseConfig = {
+  host     : 'localhost',
+  user     : 'root',
+  password : 'toor',
+  database : 'yamaform'
 }
+
+const yamaform = new Yamaform(databaseConfig)
+
+let props = {
+  "method":'put',
+  "id":1,
+  "action":'/',
+}
+
+const getForm = async () => {
+  let form = await yamaform.generateForm('database.json', 'person', props)
+  console.log(form)
+}
+
+getForm()
 ```
