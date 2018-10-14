@@ -1,6 +1,6 @@
 {
   "name": "yamaform",
-  "version": "1.0.1",
+  "version": "2.0.1",
   "description": "Generate form and database tables from a json file",
   "main": "index.js",
   "scripts": {
