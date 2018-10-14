@@ -2,7 +2,7 @@
 
 Usage example:
 
-```
+```js
 var Yamaform = require('yamaform')
 
 let databaseConfig = {
@@ -18,7 +18,7 @@ yamaform.generateTables('database.json')
 ```
 
 JSON file example:
-```
+```js
 {
     "person": {
         "name": "varchar(45)",
@@ -39,7 +39,7 @@ JSON file example:
 Form creation
 
 Example:
-```
+```js
 var Yamaform = require('yamaform')
 
 let databaseConfig = {
