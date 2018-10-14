@@ -1,4 +1,5 @@
 var fs = require('fs')
+var Database = require('./Database')
 
 var relationshipQueries = []
 var queries = []
@@ -12,6 +13,7 @@ const runQuery = (connection, query) => {
     connection.query(query, (error, results, fields) => {
         if(error)
             console.log(error)
+        return results
     })
 }
 
@@ -80,4 +82,38 @@ exports.generateTables = (connection, file) => {
     relationshipQueries.forEach( item => {
         runQuery(connection, item)
     });
+}
+
+exports.generateForm = async (file, table, props) => {
+    let json = readFile(file)
+
+    var object = null
+    if(props.method === 'put'){
+        let database = new Database({host:'localhost', user:'root', password:'toor', database:'yamaform'})
+        let results = await database.query(`SELECT * FROM ${table} WHERE id = ${props.id}`)
+        object = results[0]
+        database.close()
+    }
+    
+    var form = `<form method='${props.method}' action='${props.action}'>`
+
+    Object.keys(json[table]).forEach( (column, index) => {
+        let datatype = json[table][column]
+        let value = object ? object[column] : ''
+        form += `<div>`
+        form += `<label for='${column}'>${column}</label>`
+
+        if(datatype.includes('int')){                    
+            form += `<input type='number' name='${column}' id='${column}' value='${value}' />`
+        }else if(datatype.includes('text')){
+            form += `<textarea name='${column}' id='${column}'>${value}</textarea>`
+        }else{
+            form += `<input type='text' name='${column}' id='${column}' value='${value}' />`
+        }
+
+        form += `</div>`
+    })
+
+    form += "</form>"
+    return form
 }
