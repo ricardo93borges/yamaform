@@ -10,6 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/ricardo93borges/yamaform.git"
   },
+  "keywords": ["form","forms","mysql","database","generator","input","textarea","schema","json"],
   "author": "Ricardo Borges",
   "license": "ISC",
   "bugs": {
