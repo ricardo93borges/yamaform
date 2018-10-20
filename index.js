@@ -3,11 +3,13 @@ const mysql = require('mysql');
 var Database = require('./Database')
 module.exports = class Yamaform {
 
-    constructor(databaseConfig) {
+    constructor(databaseConfig, file) {
         this.relationshipQueries = []
         this.queries = []
         this.associativeTablesCreated = []
         this.databaseConfig = databaseConfig
+        this.file = file
+        this.json = this.readFile(this.file)
     }
 
     readFile(path) {
@@ -21,9 +23,9 @@ module.exports = class Yamaform {
         return results
     }
 
-    isManyToMany(json, currentTable, otherTable) {
-        for (let columnName in json[currentTable]) {
-            if (columnName === 'hasMany' && json[otherTable][columnName] === currentTable) {
+    isManyToMany(currentTable, otherTable) {
+        for (let columnName in this.json[currentTable]) {
+            if (columnName === 'hasMany' && this.json[otherTable][columnName] === currentTable) {
                 return true
             }
         }
@@ -32,16 +34,14 @@ module.exports = class Yamaform {
 
     /**
      * Generate tables from a json file
-     * @param  {string} file - The file path
      */
-    async generateTables(file) {
+    async generateTables() {
         try {
-            let json = this.readFile(file)
             var query = ''
 
-            Object.keys(json).forEach((tableName, index) => {
+            Object.keys(this.json).forEach((tableName) => {
                 query = `CREATE TABLE IF NOT EXISTS ${tableName} (id integer not null auto_increment primary key,`
-                let table = json[tableName]
+                let table = this.json[tableName]
 
                 for (let columnName in table) {
                     if (columnName === 'hasOne') {
@@ -53,7 +53,7 @@ module.exports = class Yamaform {
                     } else if (columnName === 'hasMany') {
 
                         let otherTable = table[columnName]
-                        if (this.isManyToMany(json, tableName, otherTable)) {
+                        if (this.isManyToMany(tableName, otherTable)) {
                             let associativeTableName = `${tableName}_${otherTable}`
                             let associativeTableNameReverse = `${otherTable}_${tableName}`
 
@@ -93,13 +93,11 @@ module.exports = class Yamaform {
 
     /**
      * Generate form from a json file
-     * @param  {string} file - The file path
      * @param  {string} table - The table to which the form must be generated
      * @param  {object} props - Form properties, example: {"method":"post", "action":"/my/form/action"}
      */
-    async generateForm(file, table, props) {
+    async generateForm(table, props) {
         try {
-            let json = this.readFile(file)
 
             var object = null
             if (props.method === 'put') {
@@ -109,8 +107,8 @@ module.exports = class Yamaform {
 
             var form = `<form method='${props.method}' action='${props.action}'>`
 
-            Object.keys(json[table]).forEach((column, index) => {
-                let datatype = json[table][column]
+            Object.keys(this.json[table]).forEach((column) => {
+                let datatype = this.json[table][column]
                 let value = object ? object[column] : ''
                 form += `<div>`
                 form += `<label for='${column}'>${column}</label>`
@@ -135,17 +133,15 @@ module.exports = class Yamaform {
 
      /**
      * Fetch and generate a HTLM table with results
-     * @param  {string} file - The file path
      * @param  {string} table - The table to which the form must be generated
      * @param  {object} props - Table properties
      */
-    async fetch(file, table, props) {
-        let json = this.readFile(file)
-        let columns = Object.keys(json[table])
+    async fetch(table, props) {
+        let columns = Object.keys(this.json[table])
         let results = await this.runQuery(`SELECT * FROM ${table}`)
         var htmlTable = '<table><thead><tr>'
 
-        columns.forEach((column, index) => {
+        columns.forEach((column) => {
             if(column !== 'hasMany' && column !== 'hasOne')
                 htmlTable += `<td>${column}</td>`
         })
@@ -154,7 +150,7 @@ module.exports = class Yamaform {
 
         for(let i=0; i<results.length; i++){
             htmlTable += '<tr>'
-            columns.forEach((column, index) => {
+            columns.forEach((column) => {
                 if(column !== 'hasMany' && column !== 'hasOne')
                     htmlTable += `<td>${results[i][column]}</td>`
             })        
