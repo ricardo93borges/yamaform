@@ -133,4 +133,37 @@ module.exports = class Yamaform {
         }
     }
 
+     /**
+     * Fetch and generate a HTLM table with results
+     * @param  {string} file - The file path
+     * @param  {string} table - The table to which the form must be generated
+     * @param  {object} props - Table properties
+     */
+    async fetch(file, table, props) {
+        let json = this.readFile(file)
+        let columns = Object.keys(json[table])
+        let results = await this.runQuery(`SELECT * FROM ${table}`)
+        var htmlTable = '<table><thead><tr>'
+
+        columns.forEach((column, index) => {
+            if(column !== 'hasMany' && column !== 'hasOne')
+                htmlTable += `<td>${column}</td>`
+        })
+
+        htmlTable += '</tr></thead><tbody>'
+
+        for(let i=0; i<results.length; i++){
+            htmlTable += '<tr>'
+            columns.forEach((column, index) => {
+                if(column !== 'hasMany' && column !== 'hasOne')
+                    htmlTable += `<td>${results[i][column]}</td>`
+            })        
+            htmlTable += '</tr>'
+        }
+
+        htmlTable += '</tbody></table>'
+        return htmlTable    
+    }
+
+
 }
