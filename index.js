@@ -161,5 +161,41 @@ module.exports = class Yamaform {
         return htmlTable    
     }
 
+    /**
+     * Insert into data base
+     * @param  {object} data - Data to be insert, example: 
+     *   {
+     *    "tableName":[{"columnName":"value", "columnName":"value"},{"columnName":"value", "columnName":"value"}]
+     *   }
+    */
+    async insert(data){
+        try{
+            var queries = []
+            for(let table in data){            
+                
+                for(let obj in data[table]){                    
+                    var columns = []
+                    var values = []
+                    
+                    for(let key in data[table][obj]){                        
+                        let val = data[table][obj][key]                                    
+                        let value = typeof val === 'string' ? `"${val}"` : val 
+                        columns.push(key)
+                        values.push(value)                        
+                    }
+                    queries.push(`INSERT INTO ${table} (${columns.join(',')}) VALUES(${values.join(',')});`)
+                }
+            }
+
+            var ids = []
+            for(let key in queries){
+                let result = await this.runQuery(queries[key])
+                ids.push(result.insertId)
+            }
+            return ids
+        }catch(e){
+            console.log(e)
+        }
+    }
 
 }
