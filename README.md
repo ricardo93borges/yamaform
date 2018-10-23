@@ -31,7 +31,8 @@ JSON file example:
     "person": {
         "name": "varchar(45)",
         "age": "integer",
-        "hasMany": "dog"
+        "hasMany": "dog",
+        "hasOne":"address"
     },
     "dog": {
         "name": "varchar(45)",
@@ -43,6 +44,14 @@ JSON file example:
     }
 }
 ```
+
+**Relationships**
+
+You can specify _many to one_ relationships with **hasOne** keyword and _many to many_ relationships with keyword **hasMany**, on the example above, _person_ has one _address_, so a foreign key called _address_id_ will be created on person table. 
+
+Also a person has many dogs and a dog has many persons, so a associative table called _person_dog_ will be created with the foreign keys _person_id_ and _dog_id_. 
+
+If in json file the dog object didn't have a _hasMany_ keyword, a foreign key called _person_id_ would be created in dog table. 
 
 <hr/>
 
