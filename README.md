@@ -8,7 +8,7 @@ npm i yamaform --save
 
 ## Usage
 
-###### Instantiate
+**Instantiate**
 
 ```js
 var Yamaform = require('yamaform')
@@ -44,6 +44,8 @@ JSON file example:
 }
 ```
 
+<hr/>
+
 **Generate form**
 
 ```js
@@ -63,6 +65,8 @@ getForm()
 
 _generateForm_ method expects a database table name and an object of properties that will be used in the form element
 
+<hr/>
+
 **Fetch data and generate a HTML table**
 
 ```js
@@ -79,6 +83,8 @@ const fetch = async () => {
 fetch()
 ```
 _fetch_ method expects a database table name and an object of properties that will be used in the table element
+
+<hr/>
 
 **Insert data in database**
 
@@ -103,6 +109,8 @@ insert()
 ```
 _insert_ method expects a json object with table name and data to be inserted into database, returns an array of IDs of the inserted rows
 
+<hr/>
+
 **Update data in database**
 
 ```js
@@ -125,6 +133,8 @@ const update = async () => {
 update()
 ```
 _update_ method expects a json object with table name and data (must contain the id of the record which will be update) to be inserted into database, returns an array of IDs of the affected rows
+
+<hr/>
 
 **Delete from database**
 
