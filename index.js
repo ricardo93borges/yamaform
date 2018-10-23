@@ -95,6 +95,7 @@ module.exports = class Yamaform {
      * Generate form from a json file
      * @param  {string} table - The table to which the form must be generated
      * @param  {object} props - Form properties, example: {"method":"post", "action":"/my/form/action"}
+     * @returns HTML form
      */
     async generateForm(table, props) {
         try {
@@ -135,6 +136,7 @@ module.exports = class Yamaform {
      * Fetch and generate a HTLM table with results
      * @param  {string} table - The table to which the form must be generated
      * @param  {object} props - Table properties
+     * @returns HTML table
      */
     async fetch(table, props) {
         let columns = Object.keys(this.json[table])
@@ -167,6 +169,7 @@ module.exports = class Yamaform {
      *   {
      *    "tableName":[{"columnName":"value", "columnName":"value"},{"columnName":"value", "columnName":"value"}]
      *   }
+     * @returns IDs of inserted rows
     */
     async insert(data){
         try{
@@ -199,42 +202,78 @@ module.exports = class Yamaform {
     }
 
     /**
-     * Update data base
-     * @param  {object} data - Data to be insert, example: 
+     * Update database
+     * @param  {object} data - Data to be update, example: 
      *   {
      *    "tableName":[{"columnName":"value", "columnName":"value"},{"columnName":"value", "columnName":"value"}]
      *   }
+     * @returns number of affected rows
     */
    async update(data){
-    try{
-        
+        try{            
+            var queries = []
+            for(let table in data){            
+                    
+                for(let obj in data[table]){                                    
+                    var columns = Object.keys(data[table][obj])
+                    if(!columns.includes('id')){
+                        console.log('missing id value')
+                        return false
+                    }
+
+                    var values = []
+                    var where = "WHERE id = "
+                    
+                    for(let key in data[table][obj]){                    
+                        let val = data[table][obj][key]                                    
+                        let value = typeof val === 'string' ? `"${val}"` : val
+
+                        if(key === 'id'){
+                            where += value 
+                            continue
+                        }
+
+                        values.push(`${key} = ${value}`)
+                    }
+                    queries.push(`UPDATE ${table} SET ${values.join(',')} ${where} ;`)
+                }
+            }
+
+            var affectedRows = 0
+            for(let key in queries){
+                let result = await this.runQuery(queries[key])
+                affectedRows += result.affectedRows
+            }
+            return affectedRows
+
+        }catch(e){
+            console.log(e)
+        }
+    }
+
+    /**
+     * Delete from database
+     * @param  {object} data - Data to be insert, example: 
+     *   {
+     *    "tableName":[{"id":1},{"where":" name = 'john' "}]
+     *   }
+     * @returns number of affected rows
+    */
+   async remove(data){
+    try{            
         var queries = []
         for(let table in data){            
-                
+                        
             for(let obj in data[table]){                                    
-                var columns = Object.keys(data[table][obj])
-                if(!columns.includes('id')){
-                    console.log('missing id value')
-                    return false
-                }
-
-                var values = []
-                var where = "WHERE id = "
                 
                 for(let key in data[table][obj]){                    
                     let val = data[table][obj][key]                                    
-                    let value = typeof val === 'string' ? `"${val}"` : val
-
-                    if(key === 'id'){
-                        where += value 
-                        continue
-                    }
-
-                    values.push(`${key} = ${value}`)
+                    queries.push(`DELETE FROM ${table} WHERE ${val} ;`)
                 }
-                queries.push(`UPDATE ${table} SET ${values.join(',')} ${where} ;`)
+                
             }
         }
+        console.log(queries)
 
         var affectedRows = 0
         for(let key in queries){
@@ -242,7 +281,7 @@ module.exports = class Yamaform {
             affectedRows += result.affectedRows
         }
         return affectedRows
-        
+
     }catch(e){
         console.log(e)
     }
