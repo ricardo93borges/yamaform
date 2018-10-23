@@ -198,4 +198,54 @@ module.exports = class Yamaform {
         }
     }
 
+    /**
+     * Update data base
+     * @param  {object} data - Data to be insert, example: 
+     *   {
+     *    "tableName":[{"columnName":"value", "columnName":"value"},{"columnName":"value", "columnName":"value"}]
+     *   }
+    */
+   async update(data){
+    try{
+        
+        var queries = []
+        for(let table in data){            
+                
+            for(let obj in data[table]){                                    
+                var columns = Object.keys(data[table][obj])
+                if(!columns.includes('id')){
+                    console.log('missing id value')
+                    return false
+                }
+
+                var values = []
+                var where = "WHERE id = "
+                
+                for(let key in data[table][obj]){                    
+                    let val = data[table][obj][key]                                    
+                    let value = typeof val === 'string' ? `"${val}"` : val
+
+                    if(key === 'id'){
+                        where += value 
+                        continue
+                    }
+
+                    values.push(`${key} = ${value}`)
+                }
+                queries.push(`UPDATE ${table} SET ${values.join(',')} ${where} ;`)
+            }
+        }
+
+        var affectedRows = 0
+        for(let key in queries){
+            let result = await this.runQuery(queries[key])
+            affectedRows += result.affectedRows
+        }
+        return affectedRows
+        
+    }catch(e){
+        console.log(e)
+    }
+}
+
 }
