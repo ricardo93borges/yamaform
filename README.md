@@ -1,6 +1,14 @@
 # Yamaform
 
-Usage example:
+## Install
+
+```
+npm i yamaform --save
+```
+
+## Usage
+
+###### Instantiate
 
 ```js
 var Yamaform = require('yamaform')
@@ -12,9 +20,9 @@ let databaseConfig = {
   database : 'database'
 }
 
-const yamaform = new Yamaform(databaseConfig)
+const yamaform = new Yamaform(databaseConfig, 'database.json')
 
-yamaform.generateTables('database.json')
+yamaform.generateTables()
 ```
 
 JSON file example:
@@ -36,21 +44,9 @@ JSON file example:
 }
 ```
 
-Form creation
+**Generate form**
 
-Example:
 ```js
-var Yamaform = require('yamaform')
-
-let databaseConfig = {
-  host     : 'localhost',
-  user     : 'root',
-  password : 'toor',
-  database : 'yamaform'
-}
-
-const yamaform = new Yamaform(databaseConfig)
-
 let props = {
   "method":'put',
   "id":1,
@@ -58,9 +54,101 @@ let props = {
 }
 
 const getForm = async () => {
-  let form = await yamaform.generateForm('database.json', 'person', props)
+  let form = await yamaform.generateForm('person', props)
   console.log(form)
 }
 
 getForm()
 ```
+
+_generateForm_ method expects a database table name and an object of properties that will be used in the form element
+
+**Fetch data and generate a HTML table**
+
+```js
+let props = {
+  "tableClass":'my-table-class',
+  "id":'my-table-id',
+}
+
+const fetch = async () => {
+  let table = await yamaform.fetch('person', props)
+  console.log(table)
+}
+
+fetch()
+```
+_fetch_ method expects a database table name and an object of properties that will be used in the table element
+
+**Insert data in database**
+
+```js
+let data = {
+   "tableName":[
+      {"columnName":"value", "columnName":"value"},
+      {"columnName":"value", "columnName":"value"}
+   ],
+   "otherTableName":[
+      {"columnName":"value", "columnName":"value"},
+      {"columnName":"value", "columnName":"value"}
+   ]
+}
+
+const insert = async () => {
+  let result = await yamaform.insert(data)
+  console.log(result)
+}
+
+insert()
+```
+_insert_ method expects a json object with table name and data to be inserted into database, returns an array of IDs of the inserted rows
+
+**Update data in database**
+
+```js
+let data = {
+   "tableName":[
+      {"id":"value", "columnName":"value"},
+      {"id":"value", "columnName":"value"}
+   ],
+   "otherTableName":[
+      {"id":"value", "columnName":"value"},
+      {"id":"value", "columnName":"value"}
+   ]
+}
+
+const update = async () => {
+  let result = await yamaform.update(data)
+  console.log(result)
+}
+
+update()
+```
+_update_ method expects a json object with table name and data (must contain the id of the record which will be update) to be inserted into database, returns an array of IDs of the affected rows
+
+**Delete from database**
+
+```js
+let data = {
+   "tableName":[
+      {'where':'id = 34'}
+   ],
+   "otherTableName":[
+      {'where':'name = "john doe" '}
+   ]
+}
+
+const remove = async () => {
+  let result = await yamaform.remove(data)
+  console.log(result)
+}
+
+remove()
+```
+_update_ method expects a json object with table name and a WHERE clause to specify a condition to delete records, returns an array of IDs of the affected rows
+
+
+
+
+
+
