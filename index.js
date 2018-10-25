@@ -109,12 +109,26 @@ module.exports = class Yamaform {
             var form = `<form method='${props.method}' action='${props.action}'>`
 
             Object.keys(this.json[table]).forEach((column) => {
+
+                if( column === 'hasMany') return
+
                 let datatype = this.json[table][column]
                 let value = object ? object[column] : ''
-                form += `<div>`
-                form += `<label for='${column}'>${column}</label>`
+                let name = column
 
-                if (datatype.includes('int')) {
+                if(column === 'hasOne'){                
+                    datatype = this.json[table][column]
+                    value = object ? object[datatype+'_id'] : ''
+                    form += `<div>`
+                    form += `<label for='${datatype}'>${datatype}</label>`
+                }else{                    
+                    form += `<div>`
+                    form += `<label for='${column}'>${column}</label>`
+                }
+                
+                if(column === 'hasOne'){
+                    form += `<input type='number' name='${datatype}' id='${datatype}' value='${value}' />`
+                } else if (datatype.includes('int')) {
                     form += `<input type='number' name='${column}' id='${column}' value='${value}' />`
                 } else if (datatype.includes('text')) {
                     form += `<textarea name='${column}' id='${column}'>${value}</textarea>`
@@ -125,7 +139,9 @@ module.exports = class Yamaform {
                 form += `</div>`
             })
 
-            form += "</form>"
+            form += "<div><input type='submit' name='submit' class='' value='submit'></div></form>"
+
+
             return form
         } catch (e) {
             console.log(e)
