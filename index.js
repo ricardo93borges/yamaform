@@ -151,7 +151,7 @@ module.exports = class Yamaform {
      /**
      * Fetch and generate a HTLM table with results
      * @param  {string} table - The table to which the form must be generated
-     * @param  {object} props - Table properties
+     * @param  {object} props - Table properties, example: {'update':true, 'delete':true, 'updateUrl':'/update', 'deleteUrl':'/delete'}
      * @returns HTML table
      */
     async fetch(table, props) {
@@ -171,6 +171,10 @@ module.exports = class Yamaform {
             columns.forEach((column) => {
                 if(column !== 'hasMany' && column !== 'hasOne')
                     htmlTable += `<td>${results[i][column]}</td>`
+                if(props.update)
+                    htmlTable += `<td><a href="${props.updateUrl+'/'+results[i]['id']}">Edit</a></td>`
+                if(props.delete)
+                    htmlTable += `<td><a href="${props.deleteUrl+'/'+results[i]['id']}">Remove</a></td>`
             })        
             htmlTable += '</tr>'
         }
