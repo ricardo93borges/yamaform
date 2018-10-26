@@ -100,13 +100,13 @@ module.exports = class Yamaform {
     async generateForm(table, props) {
         try {
 
+            var form = `<form method='post' action='${props.action}'>`
             var object = null
             if (props.method === 'put') {
                 let results = await this.runQuery(`SELECT * FROM ${table} WHERE id = ${props.id}`)
                 object = results[0]
+                form += `<input type='hidden' name='id' value='${props.id}' />`
             }
-
-            var form = `<form method='${props.method}' action='${props.action}'>`
 
             Object.keys(this.json[table]).forEach((column) => {
 
@@ -151,7 +151,7 @@ module.exports = class Yamaform {
      /**
      * Fetch and generate a HTLM table with results
      * @param  {string} table - The table to which the form must be generated
-     * @param  {object} props - Table properties, example: {'update':true, 'delete':true, 'updateUrl':'/update', 'deleteUrl':'/delete'}
+     * @param  {object} props - Table properties, example: {'viewUrl':'/view', 'deleteUrl':'/delete'}
      * @returns HTML table
      */
     async fetch(table, props) {
@@ -170,12 +170,12 @@ module.exports = class Yamaform {
             htmlTable += '<tr>'
             columns.forEach((column) => {
                 if(column !== 'hasMany' && column !== 'hasOne')
-                    htmlTable += `<td>${results[i][column]}</td>`
-                if(props.update)
-                    htmlTable += `<td><a href="${props.updateUrl+'/'+results[i]['id']}">Edit</a></td>`
-                if(props.delete)
-                    htmlTable += `<td><a href="${props.deleteUrl+'/'+results[i]['id']}">Remove</a></td>`
-            })        
+                    htmlTable += `<td>${results[i][column]}</td>`                
+            })
+            if(props.viewUrl)
+                htmlTable += `<td><a href="${props.viewUrl+'/'+results[i]['id']}">View</a></td>`
+            if(props.deleteUrl)
+                htmlTable += `<td><a href="${props.deleteUrl+'/'+results[i]['id']}">Remove</a></td>`
             htmlTable += '</tr>'
         }
 
@@ -293,7 +293,7 @@ module.exports = class Yamaform {
                 
             }
         }
-        console.log(queries)
+        console.log('Q: ',queries)
 
         var affectedRows = 0
         for(let key in queries){
