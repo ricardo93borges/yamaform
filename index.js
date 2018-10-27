@@ -94,13 +94,22 @@ module.exports = class Yamaform {
     /**
      * Generate form from a json file
      * @param  {string} table - The table to which the form must be generated
-     * @param  {object} props - Form properties, example: {"method":"post", "action":"/my/form/action"}
+     * @param  {object} props - Form properties, example: {
+     *                                              "method":"post", 
+     *                                              "action":"/my/form/action", 
+     *                                              'formClass':'', 
+     *                                              'labelClass':'', 
+     *                                              'inputClass':'' 
+     *                                              'inputWrapperClass':'', 
+     *                                              'buttonClass':'',
+     *                                              'buttonText':'',
+     *                                          }
      * @returns HTML form
      */
     async generateForm(table, props) {
         try {
 
-            var form = `<form method='post' action='${props.action}'>`
+            var form = `<form method='post' action='${props.action}' class='${props.formClass}'><fieldset><legend>${table}</legend>`
             var object = null
             if (props.method === 'put') {
                 let results = await this.runQuery(`SELECT * FROM ${table} WHERE id = ${props.id}`)
@@ -119,28 +128,27 @@ module.exports = class Yamaform {
                 if(column === 'hasOne'){                
                     datatype = this.json[table][column]
                     value = object ? object[datatype+'_id'] : ''
-                    form += `<div>`
-                    form += `<label for='${datatype}'>${datatype}</label>`
+                    form += `<div class='${props.inputWrapperClass}'>`
+                    form += `<label for='${datatype}' class='${props.labelClass}'>${datatype}</label>`
                 }else{                    
-                    form += `<div>`
-                    form += `<label for='${column}'>${column}</label>`
+                    form += `<div class='${props.inputWrapperClass}'>`
+                    form += `<label for='${column}' class='${props.labelClass}'>${column}</label>`
                 }
                 
                 if(column === 'hasOne'){
-                    form += `<input type='number' name='${datatype}' id='${datatype}' value='${value}' />`
+                    form += `<input type='number' name='${datatype}' id='${datatype}' value='${value}' class='${props.inputClass}'/>`
                 } else if (datatype.includes('int')) {
-                    form += `<input type='number' name='${column}' id='${column}' value='${value}' />`
+                    form += `<input type='number' name='${column}' id='${column}' value='${value}' class='${props.inputClass}'/>`
                 } else if (datatype.includes('text')) {
-                    form += `<textarea name='${column}' id='${column}'>${value}</textarea>`
+                    form += `<textarea name='${column}' id='${column}' class='${props.inputClass}'>${value}</textarea>`
                 } else {
-                    form += `<input type='text' name='${column}' id='${column}' value='${value}' />`
+                    form += `<input type='text' name='${column}' id='${column}' value='${value}' class='${props.inputClass}'/>`
                 }
 
                 form += `</div>`
             })
 
-            form += "<div><input type='submit' name='submit' class='' value='submit'></div></form>"
-
+            form += `<div class='${props.inputWrapperClass}'><input type='submit' name='submit' value='${props.buttonText ? props.buttonText : "Submit"}' class='${props.buttonClass}' /></div></fieldset></form>`
 
             return form
         } catch (e) {
@@ -151,18 +159,23 @@ module.exports = class Yamaform {
      /**
      * Fetch and generate a HTLM table with results
      * @param  {string} table - The table to which the form must be generated
-     * @param  {object} props - Table properties, example: {'viewUrl':'/view', 'deleteUrl':'/delete'}
+     * @param  {object} props - Table properties, example: {'viewUrl':'/view', 'deleteUrl':'/delete', 'tableClass':'my-table', 'viewText':'', 'deleteText':''}
      * @returns HTML table
      */
     async fetch(table, props) {
         let columns = Object.keys(this.json[table])
         let results = await this.runQuery(`SELECT * FROM ${table}`)
-        var htmlTable = '<table><thead><tr>'
+        var htmlTable = `<table class="${props.tableClass}"><thead><tr>`
 
         columns.forEach((column) => {
             if(column !== 'hasMany' && column !== 'hasOne')
-                htmlTable += `<td>${column}</td>`
+                htmlTable += `<th>${column}</th>`            
         })
+
+        if(props.viewUrl)
+            htmlTable += `<th>${props.viewText ? props.viewText : 'View'}</th>`
+        if(props.deleteUrl)
+            htmlTable += `<th>${props.deleteText ? props.deleteText : 'Delete'}</th>`
 
         htmlTable += '</tr></thead><tbody>'
 
@@ -173,9 +186,9 @@ module.exports = class Yamaform {
                     htmlTable += `<td>${results[i][column]}</td>`                
             })
             if(props.viewUrl)
-                htmlTable += `<td><a href="${props.viewUrl+'/'+results[i]['id']}">View</a></td>`
+                htmlTable += `<td><a href="${props.viewUrl+'/'+results[i]['id']}">${props.viewText ? props.viewText : 'View'}</a></td>`
             if(props.deleteUrl)
-                htmlTable += `<td><a href="${props.deleteUrl+'/'+results[i]['id']}">Remove</a></td>`
+                htmlTable += `<td><a href="${props.deleteUrl+'/'+results[i]['id']}">${props.deleteText ? props.deleteText : 'Delete'}</a></td>`
             htmlTable += '</tr>'
         }
 
