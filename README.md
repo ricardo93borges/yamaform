@@ -60,8 +60,14 @@ If in json file the dog object didn't have a _hasMany_ keyword, a foreign key ca
 ```js
 let props = {
   "method":'put',
-  "id":1,
+  "id":1, //Used when method is put
   "action":'/',
+  'formClass':'', //Optional
+  'labelClass':'', //Optional
+  'inputClass':'', //Optional
+  'inputWrapperClass':'', //Optional 
+  'buttonClass':'', //Optional
+  'buttonText':'', //Optional
 }
 
 const getForm = async () => {
@@ -80,8 +86,12 @@ _generateForm_ method expects a database table name and an object of properties 
 
 ```js
 let props = {
-  "tableClass":'my-table-class',
-  "id":'my-table-id',
+  "tableClass":'', // Optional
+  'viewUrl':'/your/url', // Optional, url to view record, will become /your/url/(record id)
+  'deleteUrl':'/your/url', // Optional, url to delete record, will become /your/url/(record id)
+  'tableClass':'', // Optional
+  'viewText':'', // Optional, text for link to view, default: view
+  'deleteText':'' // Optional, text for link to delete, default: delete
 }
 
 const fetch = async () => {
