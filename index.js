@@ -33,6 +33,23 @@ module.exports = class Yamaform {
     }
 
     /**
+    * Define associative table using json file, if tableName1 is listed first, 
+    * the associative table name will be tableName1_tableName2, otherwise will be tableName2_tableName1
+    * @param {string} tableName1
+    * @param {string} tableName2
+    */
+    defineAssociativeTableName(tableName1, tableName2){
+        let tables = Object.keys(this.json)
+        let index1 = tables.findIndex( v => v === tableName1)
+        let index2 = tables.findIndex( v => v === tableName2)
+        if(index1 < index2){
+            return `${tableName1}_${tableName2}`
+        }else{
+            return `${tableName2}_${tableName1}`
+        }
+    }
+
+    /**
      * Generate tables from a json file
      */
     async generateTables() {
@@ -54,12 +71,10 @@ module.exports = class Yamaform {
 
                         let otherTable = table[columnName]
                         if (this.isManyToMany(tableName, otherTable)) {
-                            let associativeTableName = `${tableName}_${otherTable}`
-                            let associativeTableNameReverse = `${otherTable}_${tableName}`
+                            let associativeTableName = this.defineAssociativeTableName(tableName, otherTable)
 
                             if (!this.associativeTablesCreated.includes(associativeTableName)) {
                                 this.associativeTablesCreated.push(associativeTableName)
-                                this.associativeTablesCreated.push(associativeTableNameReverse)
                                 this.queries.push(`CREATE TABLE IF NOT EXISTS ${associativeTableName} (id integer not null auto_increment primary key);`)
                                 this.relationshipQueries.push(`ALTER table ${associativeTableName} ADD COLUMN ${tableName}_id integer not null;`)
                                 this.relationshipQueries.push(`ALTER table ${associativeTableName} ADD FOREIGN KEY (${tableName}_id) REFERENCES ${tableName}(id);`)
@@ -109,7 +124,8 @@ module.exports = class Yamaform {
                 let selectedResults = []
 
                 if (props.method === 'put') {
-                    selectedResults = await this.runQuery(`SELECT * FROM ${table}_${otherTable}`)
+                    let associativeTableName = this.defineAssociativeTableName(table, otherTable)
+                    selectedResults = await this.runQuery(`SELECT * FROM ${associativeTableName}`)
                 }
                                 
                 if(results){
@@ -296,15 +312,16 @@ module.exports = class Yamaform {
             for(let column in this.json[table]){
                 if(column === "hasMany"){
                     let otherTable = this.json[table][column]
+                    let associativeTableName = this.defineAssociativeTableName(table, otherTable)
                     for(let obj in data[table]){
                         for(let key in data[table][obj]){
                             if(key === otherTable){
                                 let tableId = data[table][obj]['id']
                                 manyToManyQueries[otherTable] = []
-                                manyToManyQueries[otherTable].push(`DELETE FROM ${table}_${otherTable} WHERE ${table}_id = ${tableId}`)
+                                manyToManyQueries[otherTable].push(`DELETE FROM ${associativeTableName} WHERE ${table}_id = ${tableId}`)
                                 for(let val in data[table][obj][key]){                                    
                                     let otherTableId = data[table][obj][key][val]                                    
-                                    manyToManyQueries[otherTable].push(`INSERT INTO ${table}_${otherTable} (${table}_id, ${otherTable}_id) VALUES (${tableId}, ${otherTableId})`)
+                                    manyToManyQueries[otherTable].push(`INSERT INTO ${associativeTableName} (${table}_id, ${otherTable}_id) VALUES (${tableId}, ${otherTableId})`)
                                 }
                             }
                         }
