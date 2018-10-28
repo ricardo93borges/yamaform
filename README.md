@@ -8,6 +8,8 @@ npm i yamaform --save
 
 ## Usage
 
+A usage example can be found at https://github.com/ricardo93borges/yamaform-example
+
 **Instantiate**
 
 ```js
@@ -22,6 +24,7 @@ let databaseConfig = {
 
 const yamaform = new Yamaform(databaseConfig, 'database.json')
 
+//Generate tables using "database.json" file
 yamaform.generateTables()
 ```
 
@@ -51,7 +54,11 @@ You can specify _many to one_ relationships with **hasOne** keyword and _many to
 
 Also a person has many dogs and a dog has many persons, so a associative table called _person_dog_ will be created with the foreign keys _person_id_ and _dog_id_. 
 
-If in json file the dog object didn't have a _hasMany_ keyword, a foreign key called _person_id_ would be created in dog table. 
+If in json file the dog object didn't have a _hasMany_ keyword, a foreign key called _person_id_ would be created in dog table.
+
+In _many to many_ relationships both tables must have a _name_ column.
+
+Every table created will have a column called _id_ that will be a primary key auto incremented
 
 <hr/>
 
