@@ -91,6 +91,43 @@ module.exports = class Yamaform {
         }
     }
 
+    async isManyToManySelected(tableColumnName, associativeTableColumnName, tableRowId, associativeTableRowId, associativeTableRows){
+        for(let row in associativeTableRows){            
+            if(associativeTableRows[row][tableColumnName] === parseInt(tableRowId) &&  associativeTableRows[row][associativeTableColumnName] === parseInt(associativeTableRowId)){
+                return true
+            }
+        }
+        return false
+    }
+
+    async generateMultiselect(table, props){
+        let multiselects = {}
+        for(let column in this.json[table]){
+            if(column === "hasMany"){
+                let otherTable = this.json[table][column]
+                let results = await this.runQuery(`SELECT * FROM ${otherTable}`)
+                let selectedResults = []
+
+                if (props.method === 'put') {
+                    selectedResults = await this.runQuery(`SELECT * FROM ${table}_${otherTable}`)
+                }
+                                
+                if(results){
+                    let multiselect = `<select multiple name='${otherTable}' id='${otherTable}' class='${props.inputClass}'/>`
+                    for(let res in results){
+                        let isManyToManySelected = await this.isManyToManySelected(table+'_id', otherTable+'_id', props.id, results[res].id, selectedResults)
+                        let selected = props.method === 'put' && isManyToManySelected ? 'selected' : ''                        
+                        multiselect += `<option value="${results[res].id}" ${selected}>${results[res].name}</option>`
+                    }
+                    multiselect += `<select/>`
+                    multiselects[otherTable] = multiselect
+                }
+            }
+        }
+
+        return multiselects
+    }
+
     /**
      * Generate form from a json file
      * @param  {string} table - The table to which the form must be generated
@@ -109,23 +146,30 @@ module.exports = class Yamaform {
     async generateForm(table, props) {
         try {
 
+            var multiselects = []
+
             var form = `<form method='post' action='${props.action}' class='${props.formClass}'><fieldset><legend>${table}</legend>`
             var object = null
             if (props.method === 'put') {
                 let results = await this.runQuery(`SELECT * FROM ${table} WHERE id = ${props.id}`)
                 object = results[0]
+                var multiselects = await this.generateMultiselect(table, props)
                 form += `<input type='hidden' name='id' value='${props.id}' />`
             }
 
             Object.keys(this.json[table]).forEach((column) => {
 
-                if( column === 'hasMany') return
+                if(props.method !== 'put' && column === 'hasMany') return
 
                 let datatype = this.json[table][column]
                 let value = object ? object[column] : ''
                 let name = column
 
-                if(column === 'hasOne'){                
+                if( column === 'hasMany'){
+                    datatype = this.json[table][column]
+                    form += `<div class='${props.inputWrapperClass}'>`
+                    form += `<label for='${datatype}' class='${props.labelClass}'>${datatype}</label>`
+                }else if(column === 'hasOne'){                
                     datatype = this.json[table][column]
                     value = object ? object[datatype+'_id'] : ''
                     form += `<div class='${props.inputWrapperClass}'>`
@@ -135,7 +179,9 @@ module.exports = class Yamaform {
                     form += `<label for='${column}' class='${props.labelClass}'>${column}</label>`
                 }
                 
-                if(column === 'hasOne'){
+                if(column === 'hasMany'){
+                    form += multiselects[datatype]
+                }else if(column === 'hasOne'){
                     form += `<input type='number' name='${datatype}' id='${datatype}' value='${value}' class='${props.inputClass}'/>`
                 } else if (datatype.includes('int')) {
                     form += `<input type='number' name='${column}' id='${column}' value='${value}' class='${props.inputClass}'/>`
@@ -206,6 +252,7 @@ module.exports = class Yamaform {
     */
     async insert(data){
         try{
+            var manyToManyQueries = this.updateManyToMany(data)
             var queries = []
             for(let table in data){            
                 
@@ -213,7 +260,13 @@ module.exports = class Yamaform {
                     var columns = []
                     var values = []
                     
-                    for(let key in data[table][obj]){                        
+                    for(let key in data[table][obj]){   
+
+                        if(manyToManyQueries.hasOwnProperty(key)){
+                            queries = queries.concat(manyToManyQueries[key])
+                            continue
+                        }
+
                         let val = data[table][obj][key]                                    
                         let value = typeof val === 'string' ? `"${val}"` : val 
                         columns.push(key)
@@ -222,6 +275,8 @@ module.exports = class Yamaform {
                     queries.push(`INSERT INTO ${table} (${columns.join(',')}) VALUES(${values.join(',')});`)
                 }
             }
+
+            console.log(queries)
 
             var ids = []
             for(let key in queries){
@@ -234,6 +289,33 @@ module.exports = class Yamaform {
         }
     }
 
+    updateManyToMany(data){
+        let manyToManyQueries = {}
+
+        for(let table in data){
+            for(let column in this.json[table]){
+                if(column === "hasMany"){
+                    let otherTable = this.json[table][column]
+                    for(let obj in data[table]){
+                        for(let key in data[table][obj]){
+                            if(key === otherTable){
+                                let tableId = data[table][obj]['id']
+                                manyToManyQueries[otherTable] = []
+                                manyToManyQueries[otherTable].push(`DELETE FROM ${table}_${otherTable} WHERE ${table}_id = ${tableId}`)
+                                for(let val in data[table][obj][key]){                                    
+                                    let otherTableId = data[table][obj][key][val]                                    
+                                    manyToManyQueries[otherTable].push(`INSERT INTO ${table}_${otherTable} (${table}_id, ${otherTable}_id) VALUES (${tableId}, ${otherTableId})`)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return manyToManyQueries
+    }
+
     /**
      * Update database
      * @param  {object} data - Data to be update, example: 
@@ -243,11 +325,13 @@ module.exports = class Yamaform {
      * @returns number of affected rows
     */
    async update(data){
-        try{            
+        try{
+            var manyToManyQueries = this.updateManyToMany(data)
             var queries = []
             for(let table in data){            
                     
-                for(let obj in data[table]){                                    
+                for(let obj in data[table]){
+
                     var columns = Object.keys(data[table][obj])
                     if(!columns.includes('id')){
                         console.log('missing id value')
@@ -258,6 +342,12 @@ module.exports = class Yamaform {
                     var where = "WHERE id = "
                     
                     for(let key in data[table][obj]){                    
+
+                        if(manyToManyQueries.hasOwnProperty(key)){
+                            queries = queries.concat(manyToManyQueries[key])
+                            continue
+                        }
+                        
                         let val = data[table][obj][key]                                    
                         let value = typeof val === 'string' ? `"${val}"` : val
 
@@ -293,31 +383,30 @@ module.exports = class Yamaform {
      * @returns number of affected rows
     */
    async remove(data){
-    try{            
-        var queries = []
-        for(let table in data){            
-                        
-            for(let obj in data[table]){                                    
-                
-                for(let key in data[table][obj]){                    
-                    let val = data[table][obj][key]                                    
-                    queries.push(`DELETE FROM ${table} WHERE ${val} ;`)
+        try{            
+            var queries = []
+            for(let table in data){            
+                            
+                for(let obj in data[table]){                                    
+                    
+                    for(let key in data[table][obj]){                    
+                        let val = data[table][obj][key]                                    
+                        queries.push(`DELETE FROM ${table} WHERE ${val} ;`)
+                    }
+                    
                 }
-                
             }
-        }
-        console.log('Q: ',queries)
 
-        var affectedRows = 0
-        for(let key in queries){
-            let result = await this.runQuery(queries[key])
-            affectedRows += result.affectedRows
-        }
-        return affectedRows
+            var affectedRows = 0
+            for(let key in queries){
+                //let result = await this.runQuery(queries[key])
+                //affectedRows += result.affectedRows
+            }
+            return affectedRows
 
-    }catch(e){
-        console.log(e)
+        }catch(e){
+            console.log(e)
+        }
     }
-}
 
 }
