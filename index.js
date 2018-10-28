@@ -292,8 +292,6 @@ module.exports = class Yamaform {
                 }
             }
 
-            console.log(queries)
-
             var ids = []
             for(let key in queries){
                 let result = await this.runQuery(queries[key])
@@ -416,8 +414,8 @@ module.exports = class Yamaform {
 
             var affectedRows = 0
             for(let key in queries){
-                //let result = await this.runQuery(queries[key])
-                //affectedRows += result.affectedRows
+                let result = await this.runQuery(queries[key])
+                affectedRows += result.affectedRows
             }
             return affectedRows
 
