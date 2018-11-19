@@ -60,6 +60,8 @@ In _many to many_ relationships both tables must have a _name_ column.
 
 Every table created will have a column called _id_ that will be a primary key auto incremented
 
+If a table has more then one _many to one_ relationship use **hasOne: [table1,table2]**
+
 <hr/>
 
 **Generate form**
