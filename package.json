@@ -1,6 +1,6 @@
 {
   "name": "yamaform",
-  "version": "2.6.2",
+  "version": "2.7.2",
   "description": "Generate form and database tables from a json file",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,17 @@
     "type": "git",
     "url": "git+https://github.com/ricardo93borges/yamaform.git"
   },
-  "keywords": ["form","forms","mysql","database","generator","input","textarea","schema","json"],
+  "keywords": [
+    "form",
+    "forms",
+    "mysql",
+    "database",
+    "generator",
+    "input",
+    "textarea",
+    "schema",
+    "json"
+  ],
   "author": "Ricardo Borges",
   "license": "ISC",
   "bugs": {

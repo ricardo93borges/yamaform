@@ -63,9 +63,11 @@ module.exports = class Yamaform {
                 for (let columnName in table) {
                     if (columnName === 'hasOne') {
 
-                        let otherTable = table[columnName]
-                        this.relationshipQueries.push(`ALTER table ${tableName} ADD COLUMN ${otherTable}_id integer not null;`)
-                        this.relationshipQueries.push(`ALTER table ${tableName} ADD FOREIGN KEY (${otherTable}_id) REFERENCES ${otherTable}(id);`)
+                        for(let k in table[columnName]){
+                            let otherTable = table[columnName][k]
+                            this.relationshipQueries.push(`ALTER table ${tableName} ADD COLUMN ${otherTable}_id integer not null;`)
+                            this.relationshipQueries.push(`ALTER table ${tableName} ADD FOREIGN KEY (${otherTable}_id) REFERENCES ${otherTable}(id);`)    
+                        }
 
                     } else if (columnName === 'hasMany') {
 
@@ -186,10 +188,13 @@ module.exports = class Yamaform {
                     form += `<div class='${props.inputWrapperClass}'>`
                     form += `<label for='${datatype}' class='${props.labelClass}'>${datatype}</label>`
                 }else if(column === 'hasOne'){                
-                    datatype = this.json[table][column]
-                    value = object ? object[datatype+'_id'] : ''
-                    form += `<div class='${props.inputWrapperClass}'>`
-                    form += `<label for='${datatype}' class='${props.labelClass}'>${datatype}</label>`
+                    for(let k in this.json[table][column]){        
+                        datatype = this.json[table][column][k]
+                        value = object ? object[datatype+'_id'] : ''
+                        form += `<div class='${props.inputWrapperClass}'>`
+                        form += `<label for='${datatype}' class='${props.labelClass}'>${datatype}</label>`
+                        form += `<input type='number' name='${datatype}' id='${datatype}' value='${value}' class='${props.inputClass}'/>`
+                    }
                 }else{                    
                     form += `<div class='${props.inputWrapperClass}'>`
                     form += `<label for='${column}' class='${props.labelClass}'>${column}</label>`
@@ -198,7 +203,7 @@ module.exports = class Yamaform {
                 if(column === 'hasMany'){
                     form += multiselects[datatype]
                 }else if(column === 'hasOne'){
-                    form += `<input type='number' name='${datatype}' id='${datatype}' value='${value}' class='${props.inputClass}'/>`
+                    //form += `<input type='number' name='${datatype}' id='${datatype}' value='${value}' class='${props.inputClass}'/>`
                 } else if (datatype.includes('int')) {
                     form += `<input type='number' name='${column}' id='${column}' value='${value}' class='${props.inputClass}'/>`
                 } else if (datatype.includes('text')) {
